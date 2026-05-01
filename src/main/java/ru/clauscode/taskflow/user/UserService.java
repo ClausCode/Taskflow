@@ -2,7 +2,6 @@ package ru.clauscode.taskflow.user;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,14 +24,14 @@ public class UserService {
                 .toList();
     }
 
-    public Optional<UserDto> findById(String id) {
+    public Optional<UserDto> findById(UUID id) {
         return this.userRepository
-                .findById(UUID.fromString(id))
+                .findById(id)
                 .map(UserMapper::entityToDto);
     }
 
-    public UserDto getById(String id) {
+    public UserDto getById(UUID id) {
         return this.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("User with id = " + id + " not found!"));
     }
 }
