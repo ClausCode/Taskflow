@@ -1,5 +1,6 @@
 package ru.clauscode.taskflow.task;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +27,14 @@ public class TaskController {
     }
 
     @PostMapping
-    public TaskDto createTask(@RequestBody TaskCreateDto data) {
+    public TaskDto createTask(@RequestBody @Valid TaskCreateDto data) {
         return this.taskService.create(data);
     }
 
     @PatchMapping("/{id}/status")
     public TaskDto changeStatus(
             @PathVariable UUID id,
-            @RequestBody TaskChangeStatusDto data
+            @RequestBody @Valid TaskChangeStatusDto data
     ) {
         return this.taskService.changeStatus(id, data.status());
     }
@@ -41,7 +42,7 @@ public class TaskController {
     @PatchMapping("/{id}/executor")
     public TaskDto setExecutor(
             @PathVariable UUID id,
-            @RequestBody TaskSetExecutorDto data
+            @RequestBody @Valid TaskSetExecutorDto data
     ) {
         return this.taskService.setExecutor(id, data.executorId());
     }

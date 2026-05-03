@@ -1,5 +1,6 @@
 package ru.clauscode.taskflow.user;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createUser(@RequestBody UserCreateDto data) {
+    public UserDto createUser(@RequestBody @Valid UserCreateDto data) {
         return this.userService.create(data);
     }
 }
