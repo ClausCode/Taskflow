@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.clauscode.taskflow.user.UserEntity;
+import ru.clauscode.taskflow.user.UserService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -12,16 +14,27 @@ import java.util.UUID;
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final UserService userService;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserService userService) {
         this.taskRepository = taskRepository;
+        this.userService = userService;
+    }
+
+    private Optional<TaskEntity> findEntityById(UUID id) {
+        return this.taskRepository
+                .findById(id);
     }
 
     public Optional<TaskDto> findById(UUID id) {
-        return this.taskRepository
-                .findById(id)
+        return this.findEntityById(id)
                 .map(TaskMapper::entityToDto);
+    }
+
+    private TaskEntity getEntityById(UUID id) {
+        return this.findEntityById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task with id = " + id + " not found!"));
     }
 
     public TaskDto getById(UUID id) {
@@ -46,12 +59,26 @@ public class TaskService {
     }
 
     public TaskDto changeStatus(UUID id, TaskStatus newStatus) {
-        TaskEntity task = this.taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task with id = " + id + " not found!"));
+        TaskEntity task = this.getEntityById(id);
 
         task.setStatus(newStatus);
 
         TaskEntity saved = taskRepository.save(task);
+        return TaskMapper.entityToDto(saved);
+    }
+
+    public TaskDto setExecutor(UUID id, UUID executorId) {
+        TaskEntity task = this.getEntityById(id);
+
+        if (task.getStatus() == TaskStatus.COMPLETED) {
+            throw new IllegalArgumentException("Task already completed");
+        }
+
+        UserEntity executor = this.userService.getEntityById(executorId);
+
+        task.setExecutor(executor);
+
+        TaskEntity saved = this.taskRepository.save(task);
         return TaskMapper.entityToDto(saved);
     }
 }

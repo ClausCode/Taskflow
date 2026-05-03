@@ -37,4 +37,12 @@ public class TaskController {
     ) {
         return this.taskService.changeStatus(id, data.status());
     }
+
+    @PatchMapping("/{id}/executor")
+    public TaskDto setExecutor(
+            @PathVariable UUID id,
+            @RequestBody TaskSetExecutorDto data
+    ) {
+        return this.taskService.setExecutor(id, data.executorId());
+    }
 }
