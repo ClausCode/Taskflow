@@ -15,11 +15,13 @@ import java.util.UUID;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
+    private final TaskEventProducer taskEventProducer;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository, UserService userService) {
+    public TaskService(TaskRepository taskRepository, UserService userService, TaskEventProducer taskEventProducer) {
         this.taskRepository = taskRepository;
         this.userService = userService;
+        this.taskEventProducer = taskEventProducer;
     }
 
     private Optional<TaskEntity> findEntityById(UUID id) {
@@ -55,6 +57,14 @@ public class TaskService {
         entity.setStatus(TaskStatus.PENDING);
 
         TaskEntity saved = this.taskRepository.save(entity);
+
+        this.taskEventProducer.sendTaskCreated(
+                new TaskCreatedEvent(
+                        saved.getId(),
+                        saved.getName()
+                )
+        );
+
         return TaskMapper.entityToDto(saved);
     }
 
@@ -79,6 +89,14 @@ public class TaskService {
         task.setExecutor(executor);
 
         TaskEntity saved = this.taskRepository.save(task);
+
+        this.taskEventProducer.sendTaskAssigned(
+                new TaskAssignedEvent(
+                        saved.getId(),
+                        executor.getId()
+                )
+        );
+
         return TaskMapper.entityToDto(saved);
     }
 }
